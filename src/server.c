@@ -4,11 +4,14 @@
 #include <sys/socket.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <pthread.h>
+
+void *slave(void *args);
 
 int
 main(int argc, char *argv[])
 {
-	int server_fd, new_socket;
+	int server_fd, client;
 	int opt = 1;
 	int port = (argc > 1) ? atoi(argv[0]) : 8200;
 	printf("%d\n", port);
@@ -39,14 +42,28 @@ main(int argc, char *argv[])
 		perror("listen fail!");
 		return EXIT_FAILURE;
 	}
-
-	if ((new_socket = accept(server_fd, (struct sockaddr * ) &address, (socklen_t *) &addrlen)) < 0) {
+	/*
+	if ((client = accept(server_fd, (struct sockaddr * ) &address, (socklen_t *) &addrlen)) < 0) {
 		perror("accept error!");
 		return EXIT_FAILURE;
 	}
 
-	read(new_socket, buff, 256);
+	read(client, buff, 256);
 	printf("%s\n", buff);
-	send(new_socket, hello, strlen(hello), 0);
+	send(client, hello, strlen(hello), 0);
+	*/
+	while (1) {
+		client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
+		pthread_create(malloc(sizeof(pthread_t)), NULL, slave, &client); // scuffed mem leak, must fix...
+	}
 	return EXIT_SUCCESS;
+}
+
+void * 
+slave(void *args)
+{
+	int client = *((int *) args); // the socket for this slave
+	char *s = "Slave Started!\n";
+	printf("%s", s);
+	send(client, s, strlen(s), 0);
 }

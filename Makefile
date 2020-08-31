@@ -1,6 +1,6 @@
 # cmesg Makefile
 COMP=gcc
-FLAGS=-Wall -pedantic
+FLAGS=-Wall -pedantic -lpthread
 
 all: init server
 
