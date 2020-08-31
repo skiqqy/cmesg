@@ -61,6 +61,6 @@ slave(void *args)
 	printf("%s", s);
 	send(client, s, strlen(s), 0);
 	read(client, buff, 256);
-	printf("Mesg from client: %s\n", buff);
+	printf("Mesg from client: %s", buff);
 	return 0;
 }
