@@ -1,3 +1,7 @@
+# Custom
+*.swp
+bin/
+
 # Prerequisites
 *.d
 
