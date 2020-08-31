@@ -6,6 +6,8 @@
 #include <string.h> 
 #include <pthread.h>
 
+#define MAX_USERS 20
+
 void *slave(void *args);
 
 int
@@ -13,12 +15,10 @@ main(int argc, char *argv[])
 {
 	int server_fd, client;
 	int opt = 1;
-	int port = (argc > 1) ? atoi(argv[0]) : 8200;
+	int port = (argc > 1) ? atoi(argv[0]) : 8199;
 	printf("%d\n", port);
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
-	char buff[256] = {0};
-	char *hello = "Hello from serv\n";
 
 	if (!(server_fd = socket(AF_INET, SOCK_STREAM, 0))) {
 		perror("socket failed!");
@@ -38,23 +38,14 @@ main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (listen(server_fd, 3) < 0) {
+	if (listen(server_fd, MAX_USERS) < 0) {
 		perror("listen fail!");
 		return EXIT_FAILURE;
 	}
-	/*
-	if ((client = accept(server_fd, (struct sockaddr * ) &address, (socklen_t *) &addrlen)) < 0) {
-		perror("accept error!");
-		return EXIT_FAILURE;
-	}
 
-	read(client, buff, 256);
-	printf("%s\n", buff);
-	send(client, hello, strlen(hello), 0);
-	*/
 	while (1) {
 		client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
-		pthread_create(malloc(sizeof(pthread_t)), NULL, slave, &client); // scuffed mem leak, must fix...
+		pthread_create(malloc(sizeof(pthread_t)), NULL, slave, &client); // scuffed mem leak, TODO must fix...
 	}
 	return EXIT_SUCCESS;
 }
@@ -64,6 +55,12 @@ slave(void *args)
 {
 	int client = *((int *) args); // the socket for this slave
 	char *s = "Slave Started!\n";
+	char buff[256];
+
+	// Just example code for now
 	printf("%s", s);
 	send(client, s, strlen(s), 0);
+	read(client, buff, 256);
+	printf("Mesg from client: %s\n", buff);
+	return 0;
 }
