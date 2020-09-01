@@ -58,9 +58,10 @@ slave(void *args)
 	char buff[256];
 
 	// Just example code for now
-	printf("%s", s);
+	printf("%sServicing CID=%d\n", s, client);
 	send(client, s, strlen(s), 0);
 	read(client, buff, 256);
 	printf("Mesg from client: %s", buff);
+	close(client);
 	return 0;
 }
