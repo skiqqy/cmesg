@@ -15,8 +15,7 @@ main(int argc, char *argv[])
 {
 	int server_fd, client;
 	int opt = 1;
-	int port = (argc > 1) ? atoi(argv[0]) : 8199;
-	printf("%d\n", port);
+	int port = (argc > 1) ? atoi(argv[1]) : 8199;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
 
