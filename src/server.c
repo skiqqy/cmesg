@@ -7,6 +7,7 @@
 #include <pthread.h>
 
 #define MAX_USERS 20
+#define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
 
 void *slave(void *args);
 
@@ -53,17 +54,20 @@ void *
 slave(void *args)
 {
 	int client = *((int *) args); // the socket for this slave
-	char *s = "Slave Started!\n";
+	char *s = "Type: ";
 	char buff[256];
 
-	// Just example code for now
 	printf("%sServicing CID=%d\n", s, client);
+	send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
 	send(client, s, strlen(s), 0);
-	read(client, buff, 256);
-	printf("Mesg from client: %s", buff);
-	strtok(buff, "\n"); // remove trailing newline:
-	strcat(buff, " <- message sent");
-	send(client, buff, strlen(buff), 0);
+	while (read(client, buff, 256)) {
+		strtok(buff, "\n"); // remove trailing newline:
+		printf("Mesg from client: %s\n", buff);
+		strcat(buff, " <- message sent\n");
+		send(client, buff, strlen(buff), 0);
+		send(client, s, strlen(s), 0);
+	}
+
 	close(client);
 	return 0;
 }
