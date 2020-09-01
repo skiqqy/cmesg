@@ -62,6 +62,9 @@ slave(void *args)
 	send(client, s, strlen(s), 0);
 	read(client, buff, 256);
 	printf("Mesg from client: %s", buff);
+	strtok(buff, "\n"); // remove trailing newline:
+	strcat(buff, " <- message sent");
+	send(client, buff, strlen(buff), 0);
 	close(client);
 	return 0;
 }
