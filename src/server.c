@@ -6,10 +6,18 @@
 #include <string.h> 
 #include <pthread.h>
 
-#define MAX_USERS 20
+#define MAX_USERS 2
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
+#define LOCKS 2
+
+int clients[MAX_USERS];
+int users = 0;
+int locks[LOCKS]; // Thread safety. 0 -> unlocked
+pthread_t sockets[MAX_USERS];
 
 void *slave(void *args);
+int getlock(int *lock);
+void unlock(int *lock);
 
 int
 main(int argc, char *argv[])
@@ -19,6 +27,11 @@ main(int argc, char *argv[])
 	int port = (argc > 1) ? atoi(argv[1]) : 8199;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
+	int i;
+
+	for (i = 0; i < LOCKS; i++) {
+		locks[i] = 0; // init the locks
+	}
 
 	if (!(server_fd = socket(AF_INET, SOCK_STREAM, 0))) {
 		perror("socket failed!");
@@ -45,9 +58,29 @@ main(int argc, char *argv[])
 
 	while (1) {
 		client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
+		while (getlock(&locks[0]));
+		users++;
+		unlock(&locks[0]);
 		pthread_create(malloc(sizeof(pthread_t)), NULL, slave, &client); // scuffed mem leak, TODO must fix...
+		printf("Current connected users: %d\n", users);
 	}
 	return EXIT_SUCCESS;
+}
+
+int
+getlock(int *lock)
+{
+	if (!*lock) {
+		*lock = 1;
+		return 0;
+	}
+	return 1;
+}
+
+void
+unlock(int *lock)
+{
+	*lock = 0;
 }
 
 void * 
