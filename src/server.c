@@ -129,12 +129,14 @@ void
 broadcast(char *s)
 {
 	int i;
+	char c[512];
 	while(getlock(&locks[1]));
 	for (i = 0; i < MAX_USERS; i++) {
 		if (clients[i].used) {
 			// We can send to this client
 			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
-			send(clients[i].socket, s, strlen(s), 0);
+			sprintf(c, "\n%s\nType: ", s); // This is for nc support, the GUI client will remove this
+			send(clients[i].socket, c, strlen(c), 0);
 		}
 	}
 	unlock(&locks[1]);
@@ -148,6 +150,7 @@ slave(void *args)
 	int clientID = sd.clientID;
 	char s[64];
 	char buff[256];
+	char bigbuff[512];
 	sprintf(s, "(%s) Type: ", clients[clientID].username);
 
 	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
@@ -156,7 +159,8 @@ slave(void *args)
 	while (read(client, buff, 256)) {
 		strtok(buff, "\n"); // remove trailing newline:
 		printf("Mesg from client: %s\n", buff);
-		broadcast(buff); // We broadcast this.
+		sprintf(bigbuff, "(%s) ~ %s", clients[clientID].username, buff);
+		broadcast(bigbuff); // We broadcast this.
 	}
 
 	close(client);
