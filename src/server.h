@@ -9,4 +9,5 @@ struct user_data {
 	char username[32];
 	int age;
 	int used;
+	int socket;
 } User;

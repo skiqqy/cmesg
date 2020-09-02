@@ -21,6 +21,7 @@ void *slave(void *args);
 int getlock(int *lock);
 void unlock(int *lock);
 int getslave(); // Gets an available slave
+void broadcast(char *s);
 
 int
 main(int argc, char *argv[])
@@ -83,6 +84,7 @@ main(int argc, char *argv[])
 
 			clients[clientID].age = 0; // TODO get age
 			clients[clientID].used = 1;
+			clients[clientID].socket = client;
 			sd.client = client;
 			sd.clientID = clientID;
 			while (getlock(&locks[0]));
@@ -123,6 +125,21 @@ getslave()
 	return -1;
 }
 
+void
+broadcast(char *s)
+{
+	int i;
+	while(getlock(&locks[1]));
+	for (i = 0; i < MAX_USERS; i++) {
+		if (clients[i].used) {
+			// We can send to this client
+			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
+			send(clients[i].socket, s, strlen(s), 0);
+		}
+	}
+	unlock(&locks[1]);
+}
+
 void * 
 slave(void *args)
 {
@@ -135,14 +152,11 @@ slave(void *args)
 
 	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
 	printf("Username = %s\n", clients[clientID].username);
-	//send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
 		strtok(buff, "\n"); // remove trailing newline:
 		printf("Mesg from client: %s\n", buff);
-		strcat(buff, " <- message sent\n");
-		send(client, buff, strlen(buff), 0);
-		send(client, s, strlen(s), 0);
+		broadcast(buff); // We broadcast this.
 	}
 
 	close(client);
