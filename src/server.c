@@ -6,6 +6,8 @@
 #include <string.h> 
 #include <pthread.h>
 
+#include "server.h"
+
 #define MAX_USERS 2
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
 #define LOCKS 2
@@ -18,19 +20,24 @@ pthread_t sockets[MAX_USERS];
 void *slave(void *args);
 int getlock(int *lock);
 void unlock(int *lock);
+int getslave(); // Gets an available slave
 
 int
 main(int argc, char *argv[])
 {
-	int server_fd, client;
+	int server_fd, client, clientID, i;
 	int opt = 1;
 	int port = (argc > 1) ? atoi(argv[1]) : 8199;
 	struct sockaddr_in address;
+	struct slaveData sd;
 	int addrlen = sizeof(address);
-	int i;
 
 	for (i = 0; i < LOCKS; i++) {
 		locks[i] = 0; // init the locks
+	}
+
+	for (i = 0; i < MAX_USERS; i++) {
+		clients[i] = 0; // init the locks
 	}
 
 	if (!(server_fd = socket(AF_INET, SOCK_STREAM, 0))) {
@@ -57,12 +64,24 @@ main(int argc, char *argv[])
 	}
 
 	while (1) {
-		client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
-		while (getlock(&locks[0]));
-		users++;
-		unlock(&locks[0]);
-		pthread_create(malloc(sizeof(pthread_t)), NULL, slave, &client); // scuffed mem leak, TODO must fix...
-		printf("Current connected users: %d\n", users);
+		if (users < MAX_USERS) {
+			client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
+			clientID = getslave();
+
+			if (clientID == -1) {
+				close(client); // We dont have a thread...
+				continue;
+			}
+
+			clients[clientID] = client;
+			sd.client = client;
+			sd.clientID = clientID;
+			while (getlock(&locks[0]));
+			users++;
+			pthread_create(&sockets[clientID], NULL, slave, &sd);
+			unlock(&locks[0]);
+			printf("Current connected users: %d/%d\n", users, MAX_USERS);
+		}
 	}
 	return EXIT_SUCCESS;
 }
@@ -83,14 +102,28 @@ unlock(int *lock)
 	*lock = 0;
 }
 
+int
+getslave()
+{
+	int i;
+	for (i = 0; i < MAX_USERS; i++) {
+		if (!clients[i]) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void * 
 slave(void *args)
 {
-	int client = *((int *) args); // the socket for this slave
+	struct slaveData sd = *((struct slaveData *) args);
+	int client = sd.client;
+	int clientID = sd.clientID;
 	char *s = "Type: ";
 	char buff[256];
 
-	printf("%sServicing CID=%d\n", s, client);
+	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
 	send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
@@ -102,5 +135,9 @@ slave(void *args)
 	}
 
 	close(client);
+	while (getlock(&locks[0]));
+	users--;
+	clients[clientID] = 0;
+	unlock(&locks[0]);
 	return 0;
 }
