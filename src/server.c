@@ -31,6 +31,7 @@ main(int argc, char *argv[])
 	struct sockaddr_in address;
 	struct slaveData sd;
 	int addrlen = sizeof(address);
+	char buff[256];
 
 	for (i = 0; i < LOCKS; i++) {
 		locks[i] = 0; // init the locks
@@ -73,8 +74,14 @@ main(int argc, char *argv[])
 				continue;
 			}
 
-			clients[clientID].age = 0;
-			sprintf(clients[clientID].username, "TempName%d", clientID);
+			// Get User Data
+			send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
+			send(client, "Enter Username: ", strlen("Enter Username: "), 0);
+			read(client, buff, 256); // WARNING Socket closing will break server
+			strtok(buff, "\n"); // Remove newline
+			sprintf(clients[clientID].username, buff); // WARNING Secuirity risk
+
+			clients[clientID].age = 0; // TODO get age
 			clients[clientID].used = 1;
 			sd.client = client;
 			sd.clientID = clientID;
@@ -122,12 +129,13 @@ slave(void *args)
 	struct slaveData sd = *((struct slaveData *) args);
 	int client = sd.client;
 	int clientID = sd.clientID;
-	char *s = "Type: ";
+	char s[64];
 	char buff[256];
+	sprintf(s, "(%s) Type: ", clients[clientID].username);
 
 	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
 	printf("Username = %s\n", clients[clientID].username);
-	send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
+	//send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
 		strtok(buff, "\n"); // remove trailing newline:
