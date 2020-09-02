@@ -74,7 +74,8 @@ main(int argc, char *argv[])
 			}
 
 			clients[clientID].age = 0;
-			sprintf(clients[clientID].username, "TempName");
+			sprintf(clients[clientID].username, "TempName%d", clientID);
+			clients[clientID].used = 1;
 			sd.client = client;
 			sd.clientID = clientID;
 			while (getlock(&locks[0]));
