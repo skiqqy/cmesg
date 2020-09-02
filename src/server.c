@@ -12,7 +12,7 @@
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
 #define LOCKS 2
 
-int clients[MAX_USERS];
+struct user_data clients[MAX_USERS];
 int users = 0;
 int locks[LOCKS]; // Thread safety. 0 -> unlocked
 pthread_t sockets[MAX_USERS];
@@ -37,7 +37,7 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < MAX_USERS; i++) {
-		clients[i] = 0; // init the locks
+		clients[i].used = 0; // init the locks
 	}
 
 	if (!(server_fd = socket(AF_INET, SOCK_STREAM, 0))) {
@@ -73,7 +73,8 @@ main(int argc, char *argv[])
 				continue;
 			}
 
-			clients[clientID] = client;
+			clients[clientID].age = 0;
+			sprintf(clients[clientID].username, "TempName");
 			sd.client = client;
 			sd.clientID = clientID;
 			while (getlock(&locks[0]));
@@ -107,7 +108,7 @@ getslave()
 {
 	int i;
 	for (i = 0; i < MAX_USERS; i++) {
-		if (!clients[i]) {
+		if (!clients[i].used) {
 			return i;
 		}
 	}
@@ -124,6 +125,7 @@ slave(void *args)
 	char buff[256];
 
 	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
+	printf("Username = %s\n", clients[clientID].username);
 	send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
@@ -137,7 +139,7 @@ slave(void *args)
 	close(client);
 	while (getlock(&locks[0]));
 	users--;
-	clients[clientID] = 0;
+	clients[clientID].used = 0;
 	unlock(&locks[0]);
 	return 0;
 }
