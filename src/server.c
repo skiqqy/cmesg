@@ -18,10 +18,11 @@ int locks[LOCKS]; // Thread safety. 0 -> unlocked
 pthread_t sockets[MAX_USERS];
 
 void *slave(void *args);
-int getlock(int *lock);
+void getlock(int *lock);
 void unlock(int *lock);
 int getslave(); // Gets an available slave
 void broadcast(char *s);
+void disconnect(int clientID);
 
 int
 main(int argc, char *argv[])
@@ -87,7 +88,8 @@ main(int argc, char *argv[])
 			clients[clientID].socket = client;
 			sd.client = client;
 			sd.clientID = clientID;
-			while (getlock(&locks[0]));
+
+			getlock(&locks[0]);
 			users++;
 			pthread_create(&sockets[clientID], NULL, slave, &sd);
 			unlock(&locks[0]);
@@ -97,14 +99,11 @@ main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
-int
+void
 getlock(int *lock)
 {
-	if (!*lock) {
-		*lock = 1;
-		return 0;
-	}
-	return 1;
+	while (*lock);
+	*lock = 1;
 }
 
 void
@@ -130,7 +129,7 @@ broadcast(char *s)
 {
 	int i;
 	char c[512];
-	while(getlock(&locks[1]));
+	getlock(&locks[1]);
 	for (i = 0; i < MAX_USERS; i++) {
 		if (clients[i].used) {
 			// We can send to this client
@@ -140,6 +139,17 @@ broadcast(char *s)
 		}
 	}
 	unlock(&locks[1]);
+}
+
+void
+disconnect(int clientID)
+{
+	close(clients[clientID].socket);
+	// Begin lock for thread safety
+	getlock(&locks[0]);
+	clients[clientID].used = 0;
+	users--;
+	unlock(&locks[0]);
 }
 
 void * 
@@ -158,15 +168,15 @@ slave(void *args)
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
 		strtok(buff, "\n"); // remove trailing newline:
+		if (!strcmp("/q", buff)) {
+			disconnect(clientID);
+			return 0;
+		}
 		printf("Mesg from client: %s\n", buff);
 		sprintf(bigbuff, "(%s) ~ %s", clients[clientID].username, buff);
 		broadcast(bigbuff); // We broadcast this.
 	}
 
-	close(client);
-	while (getlock(&locks[0]));
-	users--;
-	clients[clientID].used = 0;
-	unlock(&locks[0]);
+	disconnect(clientID);
 	return 0;
 }
