@@ -9,7 +9,7 @@ void *slave(void *args);
 void getlock(int *lock);
 void unlock(int *lock);
 int getclient(); // Gets an available slave
-void broadcast(char *s);
+void broadcast(char *s, int CID);
 void disconnect(int clientID);
 pthread_t *getthread();
 void relthread(pthread_t *thread);

@@ -151,13 +151,13 @@ getclient()
 }
 
 void
-broadcast(char *s)
+broadcast(char *s, int CID)
 {
 	int i;
 	char c[512];
 	getlock(&locks[1]);
 	for (i = 0; i < MAX_USERS; i++) {
-		if (clients[i].used) {
+		if (clients[i].used && (i !=CID)) {
 			// We can send to this client
 			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
 			sprintf(c, "\n%s\nType: ", s); // This is for nc support, the GUI client will remove this
@@ -200,7 +200,8 @@ slave(void *args)
 		}
 		printf("Mesg from client: %s\n", buff);
 		sprintf(bigbuff, "(%s) ~ %s", clients[clientID].username, buff);
-		broadcast(bigbuff); // We broadcast this.
+		broadcast(bigbuff, clientID); // We broadcast this.
+		send(client, "Type: ", 6, 0);
 	}
 
 	disconnect(clientID);
