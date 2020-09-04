@@ -1,26 +1,42 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "server.h"
 
-#define MAX_USERS 2
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
 #define LOCKS 3
 
-struct user_data clients[MAX_USERS];
+struct user_data *clients;
 struct thread_pool *pool;
 int users = 0;
 int locks[LOCKS]; // Thread safety. 0 -> unlocked
+int max_users = 2;
 
 int
 main(int argc, char *argv[])
 {
 	int server_fd, client, clientID, i;
 	int opt = 1;
-	int port = (argc > 1) ? atoi(argv[1]) : 8199;
+	int port = 8199;
 	struct sockaddr_in address;
 	struct slaveData sd;
 	int addrlen = sizeof(address);
 	char buff[256];
+
+	while ((i = getopt(argc, argv, "p:M:")) != -1) {
+		switch (i) {
+			case 'p':
+				port = atoi(optarg);
+				printf("Port: %d\n", port);
+				break;
+			case 'M':
+				max_users = atoi(optarg);
+				printf("max_users: %d\n", max_users);
+				break;
+		}
+	}
+
+	clients = malloc(sizeof(struct user_data)*max_users);
 
 	// Init
 	pool = malloc(sizeof(struct thread_pool));
@@ -32,7 +48,7 @@ main(int argc, char *argv[])
 		locks[i] = 0; // init the locks
 	}
 
-	for (i = 0; i < MAX_USERS; i++) {
+	for (i = 0; i < max_users; i++) {
 		clients[i].used = 0; // init the locks
 	}
 
@@ -54,13 +70,13 @@ main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (listen(server_fd, MAX_USERS) < 0) {
+	if (listen(server_fd, max_users) < 0) {
 		perror("listen fail!");
 		return EXIT_FAILURE;
 	}
 
 	while (1) {
-		if (users < MAX_USERS) {
+		if (users < max_users) {
 			*buff = '\0';
 			client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
 
@@ -85,7 +101,7 @@ main(int argc, char *argv[])
 			unlock(&locks[0]);
 			sd.thread = get_thread();
 			pthread_create(sd.thread, NULL, slave, &sd);
-			printf("Current connected users: %d/%d\n", users, MAX_USERS);
+			printf("Current connected users: %d/%d\n", users, max_users);
 		}
 	}
 	return EXIT_SUCCESS;
@@ -166,7 +182,7 @@ int
 get_client(int *cl)
 {
 	int i;
-	for (i = 0; i < MAX_USERS; i++) {
+	for (i = 0; i < max_users; i++) {
 		if (!clients[i].used) {
 			*cl = i;
 			return 1;
@@ -181,7 +197,7 @@ broadcast(char *s, int CID)
 	int i;
 	char c[512];
 	getlock(&locks[1]);
-	for (i = 0; i < MAX_USERS; i++) {
+	for (i = 0; i < max_users; i++) {
 		if (clients[i].used && (i !=CID)) {
 			// We can send to this client
 			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
