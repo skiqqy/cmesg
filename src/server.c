@@ -61,35 +61,29 @@ main(int argc, char *argv[])
 
 	while (1) {
 		if (users < MAX_USERS) {
+			*buff = '\0';
 			client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
-			clientID = getclient();
 
-			if (clientID == -1) {
+			if (!get_client(&clientID)) {
 				sprintf(buff, "ERROR: No available client, please try again later.");
 				send(client, buff, strlen(buff), 0);
 				close(client);
 				continue;
 			}
 
-			// Get User Data
-			send(client, MESSAGE_OF_THE_DAY, strlen(MESSAGE_OF_THE_DAY), 0);
-			send(client, "Enter Username: ", strlen("Enter Username: "), 0);
-			read(client, buff, 256); // WARNING Socket closing will break server
-			strtok(buff, "\n"); // Remove newline
-			sprintf(clients[clientID].username, buff); // WARNING Secuirity risk
+			if (!init_user(&clients[clientID], client)) {
+				printf("ERROR: Init of client failed.\n");
+				close(clientID);
+				continue;
+			}
 
-			sprintf(buff, "(%s) Has just joined!", clients[clientID].username);
-			broadcast(buff, -1);
-			clients[clientID].age = 0; // TODO get age
-			clients[clientID].used = 1;
-			clients[clientID].socket = client;
 			sd.client = client;
 			sd.clientID = clientID;
 
 			getlock(&locks[0]);
 			users++;
 			unlock(&locks[0]);
-			sd.thread = getthread();
+			sd.thread = get_thread();
 			pthread_create(sd.thread, NULL, slave, &sd);
 			printf("Current connected users: %d/%d\n", users, MAX_USERS);
 		}
@@ -97,8 +91,36 @@ main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
+int
+init_user(struct user_data *ud, int socket)
+{
+	// TODO Populate ud
+	char buff[256] = "";
+	int val;
+	ud->socket = socket;
+
+	send(socket, "Enter Username: ", 16, 0);
+	val = read(socket, buff, 32); // WARNING Socket closing will break server TODO: Make solid.
+	if (!val) {
+		return val; // an error occured.
+	}
+	strtok(buff, "\n");
+	strcpy(ud->username, buff);
+
+	send(socket, "Enter Age: ", 11, 0);
+	val = read(socket, buff, 256); // WARNING Socket closing will break server TODO: Make solid.
+	if (!val) {
+		return val; // An error occured
+	}
+	strtok(buff, "\n");
+	ud->age = atoi(buff);
+
+	ud->used = 1;
+	return 1;
+}
+
 pthread_t *
-getthread()
+get_thread()
 {
 	pthread_t *thread;
 	struct thread_pool *t = pool;
@@ -117,7 +139,7 @@ getthread()
 }
 
 void
-relthread(pthread_t *thread)
+rel_thread(pthread_t *thread)
 {
 	struct thread_pool *t = malloc(sizeof(struct thread_pool));
 	t->count = pool->count;
@@ -141,15 +163,16 @@ unlock(int *lock)
 }
 
 int
-getclient()
+get_client(int *cl)
 {
 	int i;
 	for (i = 0; i < MAX_USERS; i++) {
 		if (!clients[i].used) {
-			return i;
+			*cl = i;
+			return 1;
 		}
 	}
-	return -1;
+	return 0;
 }
 
 void
@@ -186,9 +209,11 @@ slave(void *args)
 	struct slaveData sd = *((struct slaveData *) args);
 	int client = sd.client;
 	int clientID = sd.clientID;
+	pthread_t *thread = sd.thread;
 	char s[64];
 	char buff[256];
 	char bigbuff[512];
+
 	sprintf(s, "(%s) Type: ", clients[clientID].username);
 
 	printf("Slave, fd=%d, clientID=%d\n", client, clientID);
@@ -207,6 +232,6 @@ slave(void *args)
 	}
 
 	disconnect(clientID);
-	relthread(sd.thread);
+	rel_thread(thread);
 	return 0;
 }
