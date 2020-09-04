@@ -1,28 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h> 
-#include <sys/socket.h> 
-#include <netinet/in.h> 
-#include <string.h> 
-#include <pthread.h>
-
 #include "server.h"
 
 #define MAX_USERS 2
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
-#define LOCKS 2
+#define LOCKS 3
 
 struct user_data clients[MAX_USERS];
+struct thread_pool *pool;
 int users = 0;
 int locks[LOCKS]; // Thread safety. 0 -> unlocked
-pthread_t sockets[MAX_USERS];
-
-void *slave(void *args);
-void getlock(int *lock);
-void unlock(int *lock);
-int getslave(); // Gets an available slave
-void broadcast(char *s);
-void disconnect(int clientID);
 
 int
 main(int argc, char *argv[])
@@ -34,6 +21,12 @@ main(int argc, char *argv[])
 	struct slaveData sd;
 	int addrlen = sizeof(address);
 	char buff[256];
+
+	// Init
+	pool = malloc(sizeof(struct thread_pool));
+	pool->count = 0;
+	pool->thread = 0;
+	pool->next = 0;
 
 	for (i = 0; i < LOCKS; i++) {
 		locks[i] = 0; // init the locks
@@ -69,10 +62,12 @@ main(int argc, char *argv[])
 	while (1) {
 		if (users < MAX_USERS) {
 			client = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
-			clientID = getslave();
+			clientID = getclient();
 
 			if (clientID == -1) {
-				close(client); // We dont have a thread...
+				sprintf(buff, "ERROR: No available client, please try again later.");
+				send(client, buff, strlen(buff), 0);
+				close(client);
 				continue;
 			}
 
@@ -91,12 +86,43 @@ main(int argc, char *argv[])
 
 			getlock(&locks[0]);
 			users++;
-			pthread_create(&sockets[clientID], NULL, slave, &sd);
 			unlock(&locks[0]);
+			sd.thread = getthread();
+			pthread_create(sd.thread, NULL, slave, &sd);
 			printf("Current connected users: %d/%d\n", users, MAX_USERS);
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+pthread_t *
+getthread()
+{
+	pthread_t *thread;
+	struct thread_pool *t = pool;
+
+	if (pool->count) {
+		printf("Thread space available from pool.\n");
+		pool = pool->next;
+		thread = t->thread;
+		free(t);
+	} else {
+		printf("Pool empty, creating new thread.\n");
+		thread = malloc(sizeof(pthread_t));
+	}
+
+	return thread;
+}
+
+void
+relthread(pthread_t *thread)
+{
+	struct thread_pool *t = malloc(sizeof(struct thread_pool));
+	t->count = pool->count;
+	t->count++;
+	t->thread = thread;
+	t->next = pool;
+	pool = t;
 }
 
 void
@@ -113,7 +139,7 @@ unlock(int *lock)
 }
 
 int
-getslave()
+getclient()
 {
 	int i;
 	for (i = 0; i < MAX_USERS; i++) {
@@ -178,5 +204,6 @@ slave(void *args)
 	}
 
 	disconnect(clientID);
+	relthread(sd.thread);
 	return 0;
 }
