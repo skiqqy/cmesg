@@ -78,6 +78,8 @@ main(int argc, char *argv[])
 			strtok(buff, "\n"); // Remove newline
 			sprintf(clients[clientID].username, buff); // WARNING Secuirity risk
 
+			sprintf(buff, "(%s) Has just joined!", clients[clientID].username);
+			broadcast(buff, -1);
 			clients[clientID].age = 0; // TODO get age
 			clients[clientID].used = 1;
 			clients[clientID].socket = client;
