@@ -14,7 +14,13 @@ $ make
 ## Running the server
 
 ````
-$ ./bin/serv <optional port>
+$ ./bin/cmesg [options]
+````
+
+## Help
+
+````
+$ ./bin/cmesg -h
 ````
 
 ## Testing
