@@ -11,4 +11,4 @@ clean:
 	rm -rf bin
 
 server:
-	$(COMP) $(FLAGS) src/server.c -o bin/serv
+	$(COMP) $(FLAGS) src/server.c -o bin/cmesg

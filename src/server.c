@@ -23,7 +23,7 @@ main(int argc, char *argv[])
 	int addrlen = sizeof(address);
 	char buff[256];
 
-	while ((i = getopt(argc, argv, "p:M:")) != -1) {
+	while ((i = getopt(argc, argv, "p:M:h")) != -1) {
 		switch (i) {
 			case 'p':
 				port = atoi(optarg);
@@ -32,6 +32,14 @@ main(int argc, char *argv[])
 			case 'M':
 				max_users = atoi(optarg);
 				printf("max_users: %d\n", max_users);
+				break;
+			case 'h':
+				printf("cmesg 1.1 (https://github.com/skippy404/cmesg)\n\n");
+				printf("Usage: cmesg [options].\n");
+				printf("-h\tShows this message.\n");
+				printf("-p\tSpecify a port to use.\n");
+				printf("-M\tSpecify the max user count.\n");
+				return EXIT_SUCCESS;
 				break;
 		}
 	}
