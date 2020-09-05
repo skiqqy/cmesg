@@ -34,3 +34,4 @@ int get_client(int *i); // Gets an available slave
 pthread_t *get_thread();
 void rel_thread(pthread_t *thread);
 int init_user(struct user_data *ud, int socket);
+int uniq_user(char *c);

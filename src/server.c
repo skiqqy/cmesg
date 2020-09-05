@@ -124,15 +124,20 @@ init_user(struct user_data *ud, int socket)
 	ud->socket = socket;
 
 	send(socket, "Enter Username: ", 16, 0);
-	val = read(socket, buff, 32); // WARNING Socket closing will break server TODO: Make solid.
+	val = read(socket, buff, 32);
 	if (!val) {
 		return val; // an error occured.
 	}
+	
 	strtok(buff, "\n");
+	if (!uniq_user(buff)) {
+		send(socket, "ERROR: Username taken.\n", 23, 0);
+		return 0;
+	}
 	strcpy(ud->username, buff);
 
 	send(socket, "Enter Age: ", 11, 0);
-	val = read(socket, buff, 256); // WARNING Socket closing will break server TODO: Make solid.
+	val = read(socket, buff, 256);
 	if (!val) {
 		return val; // An error occured
 	}
@@ -140,6 +145,18 @@ init_user(struct user_data *ud, int socket)
 	ud->age = atoi(buff);
 
 	ud->used = 1;
+	return 1;
+}
+
+int
+uniq_user(char *c)
+{
+	int i;
+	for (i = 0; i < max_users; i++) {
+		if (clients[i].used && !strcmp(clients[i].username, c)) {
+			return 0;
+		}
+	}
 	return 1;
 }
 
