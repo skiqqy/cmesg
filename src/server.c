@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
+#include <signal.h>
 #include "server.h"
 
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
@@ -51,6 +53,8 @@ main(int argc, char *argv[])
 	pool->count = 0;
 	pool->thread = 0;
 	pool->next = 0;
+
+	signal(SIGPIPE, SIG_IGN);
 
 	for (i = 0; i < LOCKS; i++) {
 		locks[i] = 0; // init the locks
