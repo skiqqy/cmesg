@@ -36,7 +36,7 @@ main(int argc, char *argv[])
 				printf("max_users: %d\n", max_users);
 				break;
 			case 'h':
-				printf("cmesg 1.2 (https://github.com/skippy404/cmesg)\n\n");
+				printf("cmesg v1.2.1 (https://github.com/skippy404/cmesg)\n\n");
 				printf("Usage: cmesg [options].\n");
 				printf("-h\tShows this message.\n");
 				printf("-p\tSpecify a port to use.\n");
