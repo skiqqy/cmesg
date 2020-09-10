@@ -23,6 +23,18 @@ $ ./bin/cmesg [options]
 $ ./bin/cmesg -h
 ````
 
+## Admin
+
+When compiling with `$ make`, a templete config file is created, this templete
+file is used to configure the admin user, who can login to the server and
+do privilaged commands (such as ban a user, mute someone etc).
+
+In order to enable this, one must run cmesg like so,
+
+````
+$ mesg -c /path/to/config
+````
+
 ## Testing
 
 Run the server and then,
