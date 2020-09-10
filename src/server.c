@@ -1,3 +1,8 @@
+/* @Auther  -> Stephen Cochrane
+ * @Github  -> skippy404
+ * @License -> GPL
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>

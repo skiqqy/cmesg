@@ -1,4 +1,8 @@
-// @author Stephen Cochrane
+/* @Auther  -> Stephen Cochrane
+ * @Github  -> skippy404
+ * @License -> GPL
+ */
+
 #include <unistd.h> 
 #include <sys/socket.h> 
 #include <netinet/in.h> 
