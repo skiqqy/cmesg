@@ -60,6 +60,7 @@ print_admin(struct admin *ad)
 {
 	printf("User  -> %s\n", ad->user);
 	printf("passw -> %s\n", ad->passw);
+	printf("port  -> %d\n", ad->port);
 	printf("Misc  -> %s\n", ad->misc);
 }
 

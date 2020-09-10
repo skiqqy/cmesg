@@ -33,7 +33,9 @@ main(int argc, char *argv[])
 
 	printf("\nTesting init_admin\n");
 	config_file = fopen(argv[1], "r");
-	init_admin(&ad);
+	if (init_admin(&ad)) {
+		print_admin(&ad);
+	}
 
 	return EXIT_SUCCESS;
 }
