@@ -23,10 +23,12 @@ readln(FILE *f, char *buff)
 	int ch, i = 0;
 	while ((ch = fgetc(f)) != EOF) {
 		if (ch == '\n') {
+			buff[i] = 0;
 			return 1;
 		}
 		buff[i++] = ch;
 	}
+	buff[i] = 0;
 	return 0;
 }
 
@@ -49,21 +51,32 @@ parse(FILE *f, char *key, char *val)
 	return ret;
 }
 
+/* Simple toString function for an admin struct
+ *
+ * @param struct admin *ad: The struct to print
+ */
 void
 print_admin(struct admin *ad)
 {
 	printf("User  -> %s\n", ad->user);
 	printf("passw -> %s\n", ad->passw);
-	printf("Misc -> %s\n", ad->misc);
+	printf("Misc  -> %s\n", ad->misc);
 }
 
+/* Init an admin struct from config_file.
+ * 
+ * @param struct admin *ad: The strut to init
+ * 
+ * @return int: 1 -> Success init, 0 -> Something went wrong, ad->misc will contain details.
+ */
 int
 init_admin(struct admin *ad)
 {
 	char buff[256], key[64], val[64];
 	if (!config_file) {
 		// We assume no config file given -> doesnt enable an admin.
-		return 1;
+		sprintf(ad->misc, "ERROR: config_file not set.");
+		return 0;
 	}
 
 	// Parse the config file
@@ -78,7 +91,7 @@ init_admin(struct admin *ad)
 			sprintf(buff, "ERROR: Illegal config -> %s:%s", key, val);
 			strcpy(ad->misc, buff);
 			print_admin(ad);
-			printf("%s\n", buff);
+			return 0;
 		}
 		
 	}

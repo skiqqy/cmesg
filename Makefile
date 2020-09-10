@@ -16,3 +16,4 @@ server: init
 test: init
 	$(COMP) $(FLAGS) src/testadmin.c -o bin/testadmin
 	./bin/testadmin tests/configs/test0.in
+	./bin/testadmin tests/configs/test1.in
