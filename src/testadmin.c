@@ -11,10 +11,17 @@ int
 main(int argc, char *argv[])
 {
 	FILE *f = fopen(argv[1], "r");
-	char buff[256];
+	char key[64], val[64];
 
-	while (readln(f, buff)) {
-		printf("%s\n", buff);
+	printf("Testing readln\n");
+	while (readln(f, key)) {
+		printf("%s\n", key);
+	}
+
+	f = fopen(argv[1], "r");
+	printf("\nTesting parse\n");
+	while (parse(f, key, val)) {
+		printf("key=%s, val=%s\n", key, val);
 	}
 
 	return EXIT_SUCCESS;

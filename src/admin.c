@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* Simple read function, reads a single line from a file.
  *
@@ -24,4 +25,15 @@ readln(FILE *f, char *buff)
 		buff[i++] = ch;
 	}
 	return 0;
+}
+
+int
+parse(FILE *f, char *key, char *val)
+{
+	char buff[256];
+	int ret;
+	ret = readln(f, buff);
+	sscanf(buff, "%s", key);
+	sscanf(&buff[strlen(key)], "%s", val);
+	return ret;
 }
