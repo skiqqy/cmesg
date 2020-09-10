@@ -229,8 +229,8 @@ broadcast(char *s, int CID)
 	for (i = 0; i < max_users; i++) {
 		if (clients[i].used && (i !=CID)) {
 			// We can send to this client
-			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
 			sprintf(c, "\n%s\nType: ", s); // This is for nc support, the GUI client will remove this
+			printf("Broadcasting \"%s\" -> %d\n", s, clients[i].socket);
 			send(clients[i].socket, c, strlen(c), 0);
 		}
 	}
