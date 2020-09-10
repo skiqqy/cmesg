@@ -60,7 +60,7 @@ print_admin(struct admin *ad)
 int
 init_admin(struct admin *ad)
 {
-	char key[64], val[64];
+	char buff[256], key[64], val[64];
 	if (!config_file) {
 		// We assume no config file given -> doesnt enable an admin.
 		return 1;
@@ -74,12 +74,11 @@ init_admin(struct admin *ad)
 			strcpy(ad->passw, val);
 		} else if (!strcmp("port", key)) {
 			ad->port = atoi(val);
-		} else if (!strcmp("Line", key)) {
-			// Just for debugging.
-			strcpy(ad->misc, val);
-			print_admin(ad);
 		} else {
-			printf("ERROR: Anvalid config option");
+			sprintf(buff, "ERROR: Illegal config -> %s:%s", key, val);
+			strcpy(ad->misc, buff);
+			print_admin(ad);
+			printf("%s\n", buff);
 		}
 		
 	}
