@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "admin.h"
 
 FILE *config_file = NULL;
@@ -103,6 +104,20 @@ void *
 admin_slave(void *in)
 {
 	struct admin *ad = ((struct admin *) in);
+	int socket;
+	char buff[256];
+	socklen_t size = sizeof(ad->address);
+
 	printf("Admin slave started\nuser = %s\nSocket FD = %d\n", ad->user, ad->fd);
+
+	while (1) {
+		socket = accept(ad->fd, (struct sockaddr *) ad->address, (socklen_t *) &size);
+
+		while (read(socket, buff, 256)) {
+			strtok(buff, "\n");
+			printf("Admin Entered-> |%s|\n", buff);
+		}
+	}
+	close(socket);
 	return 0;
 }

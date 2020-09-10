@@ -57,6 +57,7 @@ main(int argc, char *argv[])
 	}
 
 	clients = malloc(sizeof(struct user_data)*max_users);
+	ad->port = 0;
 
 	// Init
 	pool = malloc(sizeof(struct thread_pool));
@@ -77,15 +78,15 @@ main(int argc, char *argv[])
 	if (!open_socket(&server_fd, &address, opt, max_users, port)) {
 		return EXIT_FAILURE;
 	}
-	printf("Server socket opened, port = %d\n", port);
+	printf("Server socket opened, port = %d\nserver_fd = %d\n", port, server_fd);
 
 	// Spawn admin thread if needed
 	if (config_file && init_admin(ad)) {
-		if (!ad->port || ad->port == port || !open_socket(&ad->fd, &admin_address, opt, 1, ad->port)) {
+		if (!ad->port || ad->port == port || !open_socket(&ad->fd, &admin_address, opt, max_users, ad->port)) {
 			printf("ERROR: Admin cannot open socket\n");
 		} else {
 			// TODO: init and spawn the thread.
-			printf("Admin socket opened,  port = %d\n", ad->port);
+			ad->address = &admin_address;
 			pthread_create(malloc(sizeof(pthread_t)), NULL, admin_slave, ad);
 		}
 	}
