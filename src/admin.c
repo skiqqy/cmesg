@@ -49,6 +49,14 @@ parse(FILE *f, char *key, char *val)
 	return ret;
 }
 
+void
+print_admin(struct admin *ad)
+{
+	printf("User  -> %s\n", ad->user);
+	printf("passw -> %s\n", ad->passw);
+	printf("Misc -> %s\n", ad->misc);
+}
+
 int
 init_admin(struct admin *ad)
 {
@@ -68,8 +76,8 @@ init_admin(struct admin *ad)
 			ad->port = atoi(val);
 		} else if (!strcmp("Line", key)) {
 			// Just for debugging.
-			strcpy(ad->debug, val);
-			printf("%s\n", ad->debug);
+			strcpy(ad->misc, val);
+			print_admin(ad);
 		} else {
 			printf("ERROR: Anvalid config option");
 		}

@@ -14,6 +14,12 @@ main(int argc, char *argv[])
 	char key[64], val[64];
 	struct admin ad;
 
+	// Init
+	sprintf(ad.passw, "Not-Set");
+	sprintf(ad.user, "Not-Set");
+	sprintf(ad.misc, "Not-Set");
+	ad.port = 0;
+
 	printf("Testing readln\n");
 	while (readln(f, key)) {
 		printf("%s\n", key);

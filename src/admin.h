@@ -7,5 +7,5 @@ struct admin {
 	int port;
 	char user[256];
 	char passw[256];
-	char debug[256];
+	char misc[256];
 };
