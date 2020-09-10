@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "admin.h"
+
+FILE *config_file = NULL;
 
 /* Simple read function, reads a single line from a file.
  *
@@ -44,4 +47,33 @@ parse(FILE *f, char *key, char *val)
 	sscanf(buff, "%s", key);
 	sscanf(&buff[strlen(key)], "%s", val);
 	return ret;
+}
+
+int
+init_admin(struct admin *ad)
+{
+	char key[64], val[64];
+	if (!config_file) {
+		// We assume no config file given -> doesnt enable an admin.
+		return 1;
+	}
+
+	// Parse the config file
+	while (parse(config_file, key, val)) {
+		if (!strcmp("user", key)) {
+			strcpy(ad->user, val);
+		} else if (!strcmp("passw", key)) {
+			strcpy(ad->passw, val);
+		} else if (!strcmp("port", key)) {
+			ad->port = atoi(val);
+		} else if (!strcmp("Line", key)) {
+			// Just for debugging.
+			strcpy(ad->debug, val);
+			printf("%s\n", ad->debug);
+		} else {
+			printf("ERROR: Anvalid config option");
+		}
+		
+	}
+	return 1; // Success.
 }

@@ -12,6 +12,7 @@ main(int argc, char *argv[])
 {
 	FILE *f = fopen(argv[1], "r");
 	char key[64], val[64];
+	struct admin ad;
 
 	printf("Testing readln\n");
 	while (readln(f, key)) {
@@ -23,6 +24,10 @@ main(int argc, char *argv[])
 	while (parse(f, key, val)) {
 		printf("key=%s, val=%s\n", key, val);
 	}
+
+	printf("\nTesting init_admin\n");
+	config_file = fopen(argv[1], "r");
+	init_admin(&ad);
 
 	return EXIT_SUCCESS;
 }
