@@ -81,11 +81,7 @@ main(int argc, char *argv[])
 
 	// Spawn admin thread if needed
 	if (config_file && init_admin(ad)) {
-		if (ad->port == port) {
-			printf("ERROR: Admin and server cannot use the same port.");
-		}
-		
-		if (!ad->port || !open_socket(&ad->fd, &admin_address, opt, 1, ad->port)) {
+		if (!ad->port || ad->port == port || !open_socket(&ad->fd, &admin_address, opt, 1, ad->port)) {
 			printf("ERROR: Admin cannot open socket\n");
 		} else {
 			// TODO: init and spawn the thread.
