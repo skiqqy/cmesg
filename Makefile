@@ -6,6 +6,7 @@ all: server
 
 init:
 	mkdir -p bin/
+	-@[ ! -f config ] && cp config.example config || echo "Existing config found. Skipping."
 
 clean:
 	rm -rf bin
