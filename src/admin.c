@@ -27,6 +27,14 @@ readln(FILE *f, char *buff)
 	return 0;
 }
 
+/* Simple parse function, gets data from a line from config file.
+ * 
+ * @param FILE *f: The stream to read from.
+ * @param char *key: A buffer to store the key in.
+ * @param char *val: A buffer to store the value in.
+ *
+ * @return int: 1 if there is more to parse, 0 if there is no more to parse.
+ */
 int
 parse(FILE *f, char *key, char *val)
 {
