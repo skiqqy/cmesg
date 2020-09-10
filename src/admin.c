@@ -104,7 +104,7 @@ void *
 admin_slave(void *in)
 {
 	struct admin *ad = ((struct admin *) in);
-	int socket;
+	int socket, code;
 	char buff[256];
 	socklen_t size = sizeof(ad->address);
 
@@ -113,9 +113,42 @@ admin_slave(void *in)
 	while (1) {
 		socket = accept(ad->fd, (struct sockaddr *) ad->address, (socklen_t *) &size);
 
+		send(socket, "Login: ", 7, 0);
+		code = read(socket, buff, 256);
+		
+		if (!code) {
+			continue;
+		}
+
+		strtok(buff, "\n");
+		if (strcmp(ad->user, buff)) {
+			printf("ADMIN ERROR: Invalid username.\n");
+			send(socket, "ERROR: Incorrect username.", 26, 0);
+			close(socket);
+			continue;
+		}
+
+		send(socket, "Password: ", 10, 0);
+		code = read(socket, buff, 256);
+
+		if (!code) {
+			continue;
+		}
+
+		strtok(buff, "\n");
+		if (strcmp(ad->passw, buff)) {
+			printf("ADMIN ERROR: Invalid password.\n");
+			send(socket, "ERROR: Incorrect password.", 26, 0);
+			close(socket);
+			continue;
+		}
+		
+		send(socket, "Enter Command: ", 15, 0);
 		while (read(socket, buff, 256)) {
 			strtok(buff, "\n");
 			printf("Admin Entered-> |%s|\n", buff);
+			// TODO: Parse command.
+			send(socket, "Enter Command: ", 15, 0);
 		}
 	}
 	close(socket);
