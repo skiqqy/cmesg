@@ -98,3 +98,11 @@ init_admin(struct admin *ad)
 	}
 	return 1; // Success.
 }
+
+void *
+admin_slave(void *in)
+{
+	struct admin *ad = ((struct admin *) in);
+	printf("Admin slave started\nuser = %s\nSocket FD = %d\n", ad->user, ad->fd);
+	return 0;
+}

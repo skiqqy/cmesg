@@ -9,12 +9,13 @@
 #include <errno.h>
 #include <signal.h>
 #include "server.h"
+#include "admin.c"
 
 #define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
 #define LOCKS 3
 
-struct user_data *clients;
-struct thread_pool *pool;
+struct user_data *clients = NULL;
+struct thread_pool *pool = NULL;
 int users = 0;
 int locks[LOCKS]; // Thread safety. 0 -> unlocked
 int max_users = 2;
@@ -25,12 +26,13 @@ main(int argc, char *argv[])
 	int server_fd, client, clientID, i;
 	int opt = 1;
 	int port = 8199;
-	struct sockaddr_in address;
+	struct sockaddr_in address, admin_address;
 	struct slaveData sd;
+	struct admin *ad = malloc(sizeof(struct admin));
 	int addrlen = sizeof(address);
 	char buff[256];
 
-	while ((i = getopt(argc, argv, "p:M:h")) != -1) {
+	while ((i = getopt(argc, argv, "p:M:c:h")) != -1) {
 		switch (i) {
 			case 'p':
 				port = atoi(optarg);
@@ -39,6 +41,9 @@ main(int argc, char *argv[])
 			case 'M':
 				max_users = atoi(optarg);
 				printf("max_users: %d\n", max_users);
+				break;
+			case 'c':
+				config_file = fopen(optarg, "r");
 				break;
 			case 'h':
 				printf("cmesg v1.2.1 (https://github.com/skippy404/cmesg)\n\n");
@@ -69,27 +74,24 @@ main(int argc, char *argv[])
 		clients[i].used = 0; // init the locks
 	}
 
-	if (!(server_fd = socket(AF_INET, SOCK_STREAM, 0))) {
-		perror("socket failed!");
-	}
-
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
-		perror("setsockopt"); 
+	if (!open_socket(&server_fd, &address, opt, max_users, port)) {
 		return EXIT_FAILURE;
 	}
+	printf("Server socket opened, port = %d\n", port);
 
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(port);
-
-	if (bind(server_fd, (struct sockaddr *) &address, sizeof(address)) < 0) {
-		perror("bind fail!");
-		return EXIT_FAILURE;
-	}
-
-	if (listen(server_fd, max_users) < 0) {
-		perror("listen fail!");
-		return EXIT_FAILURE;
+	// Spawn admin thread if needed
+	if (config_file && init_admin(ad)) {
+		if (ad->port == port) {
+			printf("ERROR: Admin and server cannot use the same port.");
+		}
+		
+		if (!ad->port || !open_socket(&ad->fd, &admin_address, opt, 1, ad->port)) {
+			printf("ERROR: Admin cannot open socket\n");
+		} else {
+			// TODO: init and spawn the thread.
+			printf("Admin socket opened,  port = %d\n", ad->port);
+			pthread_create(malloc(sizeof(pthread_t)), NULL, admin_slave, ad);
+		}
 	}
 
 	while (1) {
@@ -122,6 +124,36 @@ main(int argc, char *argv[])
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+int
+open_socket(int *sfd, struct sockaddr_in *address, int opt, int max, int port)
+{
+	if (!(*sfd = socket(AF_INET, SOCK_STREAM, 0))) {
+		perror("socket failed!");
+	}
+
+	if (setsockopt(*sfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
+		perror("setsockopt"); 
+		return 0;
+	}
+
+	address->sin_family = AF_INET;
+	address->sin_addr.s_addr = INADDR_ANY;
+	address->sin_port = htons(port);
+
+	if (bind(*sfd, (struct sockaddr *) address, sizeof(*address)) < 0) {
+		perror("bind fail!");
+		return 0;
+	}
+
+	if (listen(*sfd, max_users) < 0) {
+		perror("listen fail!");
+		return 0;
+	}
+
+	// Success
+	return 1;
 }
 
 int

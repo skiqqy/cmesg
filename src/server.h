@@ -39,3 +39,4 @@ pthread_t *get_thread();
 void rel_thread(pthread_t *thread);
 int init_user(struct user_data *ud, int socket);
 int uniq_user(char *c);
+int open_socket(int *sfd, struct sockaddr_in *address, int opt, int max, int port);
