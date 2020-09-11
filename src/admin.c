@@ -162,18 +162,41 @@ command(char *c)
 {
 	// TODO Run a command.
 	char buff[256];
+	char *command = 0, *flag = 0;
 	int i;
+	const char help[512] = "\nWelcome to the help menu!\n\n"
+							"Available commands:\n"
+							"'\\h' -> Displays this message.\n"
+							"'ls' -> Lists connected users, as well as thier client ID\n"
+							"\n";
+
+	command = strtok(c, " ");
+	flag = strtok(NULL, " ");
+
+	if (command) {
+		printf("COMMAND = %s\n", command);
+	}
+
+	// For commands that use a flag.
+	if (flag) {
+		printf("FLAG = %s\n", flag);
+	}
 
 	if (!strcmp(c, "ls")) {
 		// List all the users.
-		printf("Admin ls command\n");
+		printf("ADMIN: 'ls' command.\n");
+		send(admin_socket, "\n", 1, 0);
 		for (i = 0; i < max_users; i++) {
 			if (clients[i].used) {
 				sprintf(buff, "%s\n", clients[i].username);
 				send(admin_socket, buff, strlen(buff), 0);
 			}
 		}
-	} else {
+		send(admin_socket, "\n", 1, 0);
+	} else if (!strcmp(c, "\\h")) {
+		printf("ADMIN: '\\h' command.\n");
+		send(admin_socket, help, strlen(help), 0);
+	}else {
 		printf("ADMIN ERROR: Invalid command!\n");
 	}
 }
