@@ -8,6 +8,9 @@
 #include <netinet/in.h> 
 #include <string.h> 
 #include <pthread.h>
+#include <errno.h>
+#include <signal.h>
+#include "admin.c"
 
 struct slaveData {
 	int client;
@@ -28,6 +31,15 @@ struct thread_pool {
 	pthread_t *thread;
 	ThreadPool *next;
 };
+
+#define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
+#define LOCKS 3
+
+struct user_data *clients = NULL;
+struct thread_pool *pool = NULL;
+int users = 0;
+int locks[LOCKS]; // Thread safety. 0 -> unlocked
+int max_users = 2;
 
 void *slave(void *args);
 void getlock(int *lock);

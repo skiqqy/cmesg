@@ -5,20 +5,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
-#include <signal.h>
+
 #include "server.h"
-#include "admin.c"
-
-#define MESSAGE_OF_THE_DAY "Welcome!\n" // must have trailing newline
-#define LOCKS 3
-
-struct user_data *clients = NULL;
-struct thread_pool *pool = NULL;
-int users = 0;
-int locks[LOCKS]; // Thread safety. 0 -> unlocked
-int max_users = 2;
 
 int
 main(int argc, char *argv[])
