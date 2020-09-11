@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "server.h"
+#include "admin.c"
 
 int
 main(int argc, char *argv[])
@@ -148,6 +148,7 @@ init_user(struct user_data *ud, int socket)
 	// TODO Populate ud
 	char buff[256] = "";
 	int val;
+	ud->server_mute = 0;
 	ud->socket = socket;
 
 	send(socket, "Enter Username: ", 16, 0);

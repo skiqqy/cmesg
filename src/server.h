@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include <errno.h>
 #include <signal.h>
-#include "admin.c"
 
 struct slaveData {
 	int client;
@@ -23,6 +22,7 @@ struct user_data {
 	int age;
 	int used;
 	int socket;
+	int server_mute;
 } User;
 
 typedef struct thread_pool ThreadPool;

@@ -15,3 +15,6 @@ struct admin {
 	char passw[256];
 	char misc[256];
 };
+
+int admin_socket;
+void command(char *c);

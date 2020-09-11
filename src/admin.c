@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+#include "server.h"
 #include "admin.h"
 
 FILE *config_file = NULL;
@@ -104,17 +106,17 @@ void *
 admin_slave(void *in)
 {
 	struct admin *ad = ((struct admin *) in);
-	int socket, code;
+	int code;
 	char buff[256];
 	socklen_t size = sizeof(ad->address);
 
 	printf("Admin slave started\nuser = %s\nSocket FD = %d\n", ad->user, ad->fd);
 
 	while (1) {
-		socket = accept(ad->fd, (struct sockaddr *) ad->address, (socklen_t *) &size);
+		admin_socket = accept(ad->fd, (struct sockaddr *) ad->address, (socklen_t *) &size);
 
-		send(socket, "Login: ", 7, 0);
-		code = read(socket, buff, 256);
+		send(admin_socket, "Login: ", 7, 0);
+		code = read(admin_socket, buff, 256);
 		
 		if (!code) {
 			continue;
@@ -123,13 +125,13 @@ admin_slave(void *in)
 		strtok(buff, "\n");
 		if (strcmp(ad->user, buff)) {
 			printf("ADMIN ERROR: Invalid username.\n");
-			send(socket, "ERROR: Incorrect username.", 26, 0);
-			close(socket);
+			send(admin_socket, "ERROR: Incorrect username.", 26, 0);
+			close(admin_socket);
 			continue;
 		}
 
-		send(socket, "Password: ", 10, 0);
-		code = read(socket, buff, 256);
+		send(admin_socket, "Password: ", 10, 0);
+		code = read(admin_socket, buff, 256);
 
 		if (!code) {
 			continue;
@@ -138,19 +140,40 @@ admin_slave(void *in)
 		strtok(buff, "\n");
 		if (strcmp(ad->passw, buff)) {
 			printf("ADMIN ERROR: Invalid password.\n");
-			send(socket, "ERROR: Incorrect password.", 26, 0);
-			close(socket);
+			send(admin_socket, "ERROR: Incorrect password.", 26, 0);
+			close(admin_socket);
 			continue;
 		}
 		
-		send(socket, "Enter Command: ", 15, 0);
-		while (read(socket, buff, 256)) {
+		send(admin_socket, "Enter Command: ", 15, 0);
+		while (read(admin_socket, buff, 256)) {
 			strtok(buff, "\n");
-			printf("Admin Entered-> |%s|\n", buff);
 			// TODO: Parse command.
-			send(socket, "Enter Command: ", 15, 0);
+			command(buff);
+			send(admin_socket, "Enter Command: ", 15, 0);
 		}
 	}
-	close(socket);
+	close(admin_socket);
 	return 0;
+}
+
+void
+command(char *c)
+{
+	// TODO Run a command.
+	char buff[256];
+	int i;
+
+	if (!strcmp(c, "ls")) {
+		// List all the users.
+		printf("Admin ls command\n");
+		for (i = 0; i < max_users; i++) {
+			if (clients[i].used) {
+				sprintf(buff, "%s\n", clients[i].username);
+				send(admin_socket, buff, strlen(buff), 0);
+			}
+		}
+	} else {
+		printf("ADMIN ERROR: Invalid command!\n");
+	}
 }
