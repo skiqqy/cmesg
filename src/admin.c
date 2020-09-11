@@ -196,7 +196,7 @@ command(char *c)
 	} else if (!strcmp(c, "help")) {
 		printf("ADMIN: '\\h' command.\n");
 		send(admin_socket, help, strlen(help), 0);
-	}else {
+	} else {
 		sprintf(buff, "ADMIN ERROR: Invalid command!\n");
 		send(admin_socket, buff, strlen(buff), 0);
 	}
