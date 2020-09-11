@@ -250,6 +250,12 @@ broadcast(char *s, int CID)
 	int i;
 	char c[512];
 	getlock(&locks[1]);
+
+	if (clients[CID].server_mute) {
+		unlock(&locks[1]);
+		return;
+	}
+
 	for (i = 0; i < max_users; i++) {
 		if (clients[i].used && (i !=CID)) {
 			// We can send to this client
