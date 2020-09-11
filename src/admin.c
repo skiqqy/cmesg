@@ -189,7 +189,7 @@ command(char *c)
 		send(admin_socket, "\n", 1, 0);
 		for (i = 0; i < max_users; i++) {
 			if (clients[i].used) {
-				sprintf(buff, "%s\n", clients[i].username);
+				sprintf(buff, "%s -> ClientID = %d\n", clients[i].username, i);
 				send(admin_socket, buff, strlen(buff), 0);
 			}
 		}
@@ -201,6 +201,7 @@ command(char *c)
 		if (!flag) {
 			sprintf(buff, "ADMIN ERROR 'mute' requires an argument, e.g. -> mute <clientID>\n");
 			printf("%s", buff);
+			// TODO, Mute a user.
 			send(admin_socket, buff, strlen(buff), 0);
 		}
 	} else {
