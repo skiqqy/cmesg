@@ -173,8 +173,9 @@ command(char *c)
 	command = strtok(c, " ");
 	flag = strtok(NULL, " ");
 
-	if (command) {
-		printf("COMMAND = %s\n", command);
+	if (!command) {
+		printf("ADMIN ERROR: command is NULL.\n");
+		return; // Not legal token.
 	}
 
 	// For commands that use a flag.
@@ -196,6 +197,12 @@ command(char *c)
 	} else if (!strcmp(c, "help")) {
 		printf("ADMIN: '\\h' command.\n");
 		send(admin_socket, help, strlen(help), 0);
+	} else if (!strcmp(c, "mute")) {
+		if (!flag) {
+			sprintf(buff, "ADMIN ERROR 'mute' requires an argument, e.g. -> mute <clientID>\n");
+			printf("%s", buff);
+			send(admin_socket, buff, strlen(buff), 0);
+		}
 	} else {
 		sprintf(buff, "ADMIN ERROR: Invalid command!\n");
 		send(admin_socket, buff, strlen(buff), 0);
