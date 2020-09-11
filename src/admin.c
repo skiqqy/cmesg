@@ -166,9 +166,10 @@ command(char *c)
 	int i;
 	const char help[512] = "\nWelcome to the help menu!\n\n"
 							"Available commands:\n"
-							"'help'            -> Displays this message.\n"
-							"'ls'              -> Lists connected users, as well as thier client ID\n"
-							"'mute <clientID>' -> Server mute the associated with <clientID>\n"
+							"'help'              -> Displays this message.\n"
+							"'ls'                -> Lists connected users, as well as thier client ID\n"
+							"'mute <clientID>'   -> Server mute the user associated with <clientID>\n"
+							"'unmute <clientID>' -> Server unmute the user associated with <clientID>\n"
 							"\n";
 
 	command = strtok(c, " ");
@@ -206,7 +207,6 @@ command(char *c)
 			return;
 		}
 
-		// TODO, Mute a user.
 		i = atoi(flag);
 		if (i < 0 || i > max_users) {
 			// Illegal value.
@@ -220,6 +220,28 @@ command(char *c)
 		sprintf(buff, "\n[SERVER] You have been muted.\n");
 		send(clients[i].socket, buff, strlen(buff), 0);
 		clients[i].server_mute = 1;
+	} else if (!strcmp(c, "unmute")) {
+		if (!flag) {
+			sprintf(buff, "ADMIN ERROR 'unmute' requires an argument, e.g. -> mute <clientID>.\n");
+			printf("%s", buff);
+			send(admin_socket, buff, strlen(buff), 0);
+			return;
+		}
+
+		i = atoi(flag);
+		if (i < 0 || i > max_users) {
+			// Illegal value.
+			sprintf(buff, "ADMIN ERROR: <value> must be an int in the range [0, max_users].\n");
+			printf("%s", buff);
+			send(admin_socket, buff, strlen(buff), 0);
+			return;
+		}
+
+		// User is now muted.
+		sprintf(buff, "\n[SERVER] You have been unmuted.\nType: ");
+		send(clients[i].socket, buff, strlen(buff), 0);
+
+		clients[i].server_mute = 0;
 	} else {
 		sprintf(buff, "ADMIN ERROR: Invalid command!\n");
 		send(admin_socket, buff, strlen(buff), 0);
