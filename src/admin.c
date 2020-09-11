@@ -166,8 +166,8 @@ command(char *c)
 	int i;
 	const char help[512] = "\nWelcome to the help menu!\n\n"
 							"Available commands:\n"
-							"'\\h' -> Displays this message.\n"
-							"'ls' -> Lists connected users, as well as thier client ID\n"
+							"'help' -> Displays this message.\n"
+							"'ls'   -> Lists connected users, as well as thier client ID\n"
 							"\n";
 
 	command = strtok(c, " ");
@@ -193,10 +193,11 @@ command(char *c)
 			}
 		}
 		send(admin_socket, "\n", 1, 0);
-	} else if (!strcmp(c, "\\h")) {
+	} else if (!strcmp(c, "help")) {
 		printf("ADMIN: '\\h' command.\n");
 		send(admin_socket, help, strlen(help), 0);
 	}else {
-		printf("ADMIN ERROR: Invalid command!\n");
+		sprintf(buff, "ADMIN ERROR: Invalid command!\n");
+		send(admin_socket, buff, strlen(buff), 0);
 	}
 }
