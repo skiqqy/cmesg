@@ -148,7 +148,6 @@ admin_slave(void *in)
 		send(admin_socket, "Enter Command: ", 15, 0);
 		while (read(admin_socket, buff, 256)) {
 			strtok(buff, "\n");
-			// TODO: Parse command.
 			command(buff);
 			send(admin_socket, "Enter Command: ", 15, 0);
 		}
@@ -204,7 +203,6 @@ check_flag(char *command, char *flag)
 void
 command(char *c)
 {
-	// TODO Run a command.
 	char buff[256];
 	char *command = 0, *flag = 0;
 	int i;
