@@ -158,6 +158,50 @@ admin_slave(void *in)
 }
 
 void
+admin_error(char *command, int code)
+{
+	char buff[256];
+	switch (code) {
+		case FLAG:
+			sprintf(buff, "ADMIN ERROR: '%s' requires an argument.\n", command);
+			break;
+		case RANGE:
+			if (!strcmp(command, "kick") ||
+				!strcmp(command, "mute") ||
+				!strcmp(command, "unmute")) {
+				sprintf(buff, "ADMIN ERROR: <value> must be an int in the range [0, max_users].\n");
+			}
+			break;
+	}
+
+	send(admin_socket, buff, strlen(buff), 0);
+}
+
+int
+check_flag(char *command, char *flag)
+{
+	int i;
+	if (!flag) {
+		// We need a flag.
+		admin_error(command, FLAG);
+		return 0;
+	}
+
+	// If needed, we check range.
+	if (!strcmp(KICK, command) ||
+		!strcmp(MUTE, command) ||
+		!strcmp(UNMUTE, command)) {
+		i = atoi(flag);
+
+		if (i < 0 || i > max_users) {
+			admin_error(command, RANGE);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void
 command(char *c)
 {
 	// TODO Run a command.
@@ -181,12 +225,7 @@ command(char *c)
 		return; // Not legal token.
 	}
 
-	// For commands that use a flag.
-	if (flag) {
-		printf("FLAG = %s\n", flag);
-	}
-
-	if (!strcmp(c, "ls")) {
+	if (!strcmp(c, LS)) {
 		// List all the users.
 		printf("ADMIN: 'ls' command.\n");
 		send(admin_socket, "\n", 1, 0);
@@ -197,69 +236,37 @@ command(char *c)
 			}
 		}
 		send(admin_socket, "\n", 1, 0);
-	} else if (!strcmp(c, "help")) {
-		printf("ADMIN: '\\h' command.\n");
+	} else if (!strcmp(c, HELP)) {
+		printf("ADMIN: 'help' command.\n");
 		send(admin_socket, help, strlen(help), 0);
-	} else if (!strcmp(c, "mute")) {
-		if (!flag) {
-			sprintf(buff, "ADMIN ERROR 'mute' requires an argument, e.g. -> mute <clientID>.\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
+	} else if (!strcmp(c, MUTE)) {
+		if (!check_flag(MUTE, flag)) {
 			return;
 		}
 
 		i = atoi(flag);
-		if (i < 0 || i > max_users) {
-			// Illegal value.
-			sprintf(buff, "ADMIN ERROR: <value> must be an int in the range [0, max_users].\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
-			return;
-		}
-
-		// User is now muted.
 		sprintf(buff, "\n[SERVER] You have been muted.\n");
 		send(clients[i].socket, buff, strlen(buff), 0);
 		clients[i].server_mute = 1;
-	} else if (!strcmp(c, "unmute")) {
-		if (!flag) {
-			sprintf(buff, "ADMIN ERROR 'unmute' requires an argument, e.g. -> mute <clientID>.\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
+	} else if (!strcmp(c, UNMUTE)) {
+		if (!check_flag(UNMUTE, flag)) {
 			return;
 		}
 
 		i = atoi(flag);
-		if (i < 0 || i > max_users) {
-			// Illegal value.
-			sprintf(buff, "ADMIN ERROR: <value> must be an int in the range [0, max_users].\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
-			return;
-		}
-
-		// User is now muted.
 		sprintf(buff, "\n[SERVER] You have been unmuted.\nType: ");
 		send(clients[i].socket, buff, strlen(buff), 0);
 
 		clients[i].server_mute = 0;
-	} else if (!strcmp(c, "kick")) {
-		if (!flag) {
-			sprintf(buff, "ADMIN ERROR: 'kick' requires an argument, e.g. -> kick <clientID>.\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
+	} else if (!strcmp(c, KICK)) {
+		if (!check_flag(KICK, flag)) {
 			return;
 		}
 
 		i = atoi(flag);
-		if (i < 0 || i > max_users) {
-			sprintf(buff, "ADMIN ERROR: <value> must be an int in the range [0, max_users].\n");
-			printf("%s", buff);
-			send(admin_socket, buff, strlen(buff), 0);
-		}
-
 		sprintf(buff, "\n[SERVER] You have been kicked\n");
 		send(clients[i].socket, buff, strlen(buff), 0);
+
 		clients[i].conn = 0;
 	} else {
 		sprintf(buff, "ADMIN ERROR: Invalid command!\n");

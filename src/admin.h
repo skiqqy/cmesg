@@ -16,6 +16,20 @@ struct admin {
 	char misc[256];
 };
 
+// Admin error codes.
+#define NONE   0
+#define BOUNDS 1
+#define FLAG   2
+#define RANGE  3
+
+// Admin commands.
+#define HELP   "help"
+#define LS     "ls"
+#define MUTE   "mute"
+#define UNMUTE "unmute"
+#define KICK   "kick"
+
 int admin_socket;
 void command(char *c);
-void admin_error(int code);
+void admin_error(char *command, int code);
+int check_flag(char *command, char *flag);
