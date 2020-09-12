@@ -149,6 +149,7 @@ init_user(struct user_data *ud, int socket)
 	char buff[256] = "";
 	int val;
 	ud->server_mute = 0;
+	ud->conn = 1; // We accept this connetion.
 	ud->socket = socket;
 
 	send(socket, "Enter Username: ", 16, 0);
@@ -296,10 +297,12 @@ slave(void *args)
 	send(client, s, strlen(s), 0);
 	while (read(client, buff, 256)) {
 		strtok(buff, "\n"); // remove trailing newline:
-		if (!strcmp("/q", buff)) {
+		if (!clients[clientID].conn || !strcmp("/q", buff)) {
 			disconnect(clientID);
+			rel_thread(thread);
 			return 0;
 		}
+
 		printf("Mesg from client: %s\n", buff);
 		sprintf(bigbuff, "(%s) ~ %s", clients[clientID].username, buff);
 		broadcast(bigbuff, clientID); // We broadcast this.

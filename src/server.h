@@ -23,6 +23,7 @@ struct user_data {
 	int used;
 	int socket;
 	int server_mute;
+	int conn;
 } User;
 
 typedef struct thread_pool ThreadPool;

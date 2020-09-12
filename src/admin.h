@@ -18,3 +18,4 @@ struct admin {
 
 int admin_socket;
 void command(char *c);
+void admin_error(int code);
