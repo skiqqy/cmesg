@@ -34,7 +34,7 @@ main(int argc, char *argv[])
 				config_file = fopen(optarg, "r");
 				break;
 			case 'h':
-				printf("cmesg v1.3 (https://github.com/skippy404/cmesg)\n\n");
+				printf("cmesg v1.4 (https://github.com/skippy404/cmesg)\n\n");
 				printf("Usage: cmesg [options].\n");
 				printf("-h\tShows this message.\n");
 				printf("-p\tSpecify a port to use.\n");
