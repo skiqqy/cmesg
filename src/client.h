@@ -3,8 +3,6 @@
  * @License -> GPL
  */
 
-#include <X11/Xlib.h>
+#include <gtk-3.0/gtk/gtk.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-void init();

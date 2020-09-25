@@ -15,7 +15,7 @@ server: init
 	$(COMP) $(FLAGS) src/server.c -o bin/cmesg
 
 client: init
-	$(COMP) $(FLAGS) src/client.c -o bin/client
+	$(COMP) `pkg-config --cflags gtk+-3.0` -o bin/client src/client.c `pkg-config --libs gtk+-3.0`
 
 test: init
 	$(COMP) $(FLAGS) src/testadmin.c -o bin/testadmin
