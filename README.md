@@ -5,6 +5,12 @@ This is a simple messaging server + client, the goal of this project is to allow
 a simple tui mode (using nc) to chat, or using a far more complicated GUI with
 advanced features.
 
+## Dependencies
+
+| Client | Server |
+|---|---|
+| GTK+ devel | pthreads  |
+
 ## Compiling
 
 ````
@@ -15,6 +21,12 @@ $ make
 
 ````
 $ ./bin/cmesg [options]
+````
+
+## Running the client
+
+````
+$ ./bin/client [options]
 ````
 
 ## Help
@@ -42,5 +54,3 @@ Run the server and then,
 ````
 $ nc localhost <port>
 ````
-
-And then type a message.
