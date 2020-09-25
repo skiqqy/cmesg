@@ -4,5 +4,6 @@
  */
 
 #include <gtk-3.0/gtk/gtk.h>
+#include <gtk-3.0/gtk/gtkx.h>
 #include <stdlib.h>
 #include <stdio.h>

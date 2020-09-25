@@ -19,7 +19,7 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Send the message</property>
-            <signal name="clicked" handler="send_click" swapped="no"/>
+            <signal name="clicked" handler="on_send_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="x">425</property>
