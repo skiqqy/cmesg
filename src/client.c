@@ -5,12 +5,6 @@
 
 #include "client.h"
 
-/*
-static GtkWidget *n1;
-static GtkWidget *n2;
-static GtkWidget *res;
-*/
-
 static GtkWidget *fixed;
 static GtkWidget *send_btn;          /* Send text button */
 static GtkWidget *recv_box;          /* Display recv data */
