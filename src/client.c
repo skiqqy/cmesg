@@ -9,6 +9,16 @@ static GtkWidget *n1;
 static GtkWidget *n2;
 static GtkWidget *res;
 
+static GtkWidget *fixed;
+static GtkWidget *send;              /* Send text button */
+static GtkWidget *recv;              /* Display recv data */
+static GtkWidget *text;              /* Input text */
+static GtkWidget *name;              /* Name of the program */
+static GtkWidget *voip_joined;       /* List of people joined */
+static GtkWidget *user_online_label; /* Label for online people */
+static GtkWidget *jl_voip;           /* Join/Leave voip button */
+static GtkWidget *user_online;       /* List of online people */
+
 void
 calc(GtkWidget *calculate, gpointer data)
 {

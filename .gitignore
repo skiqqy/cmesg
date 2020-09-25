@@ -2,6 +2,7 @@
 *.swp
 bin/
 config
+*.glade~
 
 # Prerequisites
 *.d
