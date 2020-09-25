@@ -35,7 +35,32 @@ int
 main(int argc, char *argv[])
 {
 	GtkWidget *window, *grid, *calculate;
+	int i, port;
+	char *hostname;
+
 	gtk_init(&argc, &argv);
+	
+	/* Parse args */
+	while ((i = getopt(argc, argv, "p:H:h")) != -1) {
+		switch (i) {
+			case 'p':
+				port = atoi(optarg);
+				printf("Port: %d\n", port);
+				break;
+			case 'H':
+				hostname = strdup(optarg);
+				printf("hostname: %s\n", hostname);
+				break;
+			case 'h':
+				printf("cmesg client v1.0 (https://github.com/skippy404/cmesg)\n\n");
+				printf("Usage: cmesg_client [options].\n");
+				printf("-h\tShows this message.\n");
+				printf("-p\tSpecify a port to use.\n");
+				printf("-H\tSpecify the hostname to connect too.\n");
+				return EXIT_SUCCESS;
+				break;
+		}
+	}
 
 	builder = gtk_builder_new_from_file("./assets/client.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "root"));

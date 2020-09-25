@@ -17,3 +17,4 @@
 #include <stdio.h>
 
 void soc_read(char *buff);
+void on_send_clicked(GtkButton *b);
