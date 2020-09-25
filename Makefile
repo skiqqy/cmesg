@@ -2,7 +2,7 @@
 COMP=gcc
 FLAGS=-Wall -pedantic -lpthread
 
-all: server
+all: server client
 
 init:
 	mkdir -p bin/
@@ -13,6 +13,9 @@ clean:
 
 server: init
 	$(COMP) $(FLAGS) src/server.c -o bin/cmesg
+
+client: init
+	$(COMP) $(FLAGS) src/client.c -o bin/client
 
 test: init
 	$(COMP) $(FLAGS) src/testadmin.c -o bin/testadmin
