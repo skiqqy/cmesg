@@ -16,12 +16,25 @@ static GtkWidget *jl_voip;           /* Join/Leave voip button */
 static GtkWidget *user_online;       /* List of online people */
 static GtkBuilder *builder;          /* The builder for GTK */
 
+/* For adding new text */
+static GtkTextIter iter;
+static GtkTextBuffer *gtk_buffer;
+
 void
 on_send_clicked(GtkButton *b)
 {
 	char *input = (char *) gtk_entry_get_text(GTK_ENTRY(text));
 	printf("DEBUG: Entered Message: %s\n", input);
+	send_mesg(input);
 	gtk_entry_set_text(GTK_ENTRY(text), "");
+}
+
+void
+update_messages(char *buff)
+{
+	/* TODO: Dont nuke the old messages. */
+	gtk_text_buffer_insert(gtk_buffer, &iter, buff, -1);
+	gtk_text_buffer_insert(gtk_buffer, &iter, "\n", -1);
 }
 
 /* Sends a message to the server
@@ -31,7 +44,8 @@ on_send_clicked(GtkButton *b)
 void
 send_mesg(char *mesg)
 {
-	/* :TODO */
+	/* TODO: Tidy up */
+	send(sock, mesg, strlen(mesg), 0);
 }
 
 /* Stores the message from a server in buffer, and sets its type.
@@ -43,8 +57,8 @@ send_mesg(char *mesg)
 int
 recv_mesg(char *buff, int *type)
 {
-	/* :TODO */
-	return 0;
+	/* TODO: Finish */
+	return read(sock, buff, 256); // Buffer cant be bigger than 256
 }
 
 int
@@ -92,8 +106,9 @@ int
 main(int argc, char *argv[])
 {
 	GtkWidget *window, *grid, *calculate;
-	int i, port = 8199;
+	int i, port = 8199, type;
 	char *hostname = "localhost";
+	char buff[256];
 	struct sockaddr_in address;
 
 	gtk_init(&argc, &argv);
@@ -142,6 +157,22 @@ main(int argc, char *argv[])
 
 	/* Map the buttons to thier handlers */
 	g_signal_connect(send_btn, "clicked", G_CALLBACK(on_send_clicked), NULL);
+
+	/* Setup the update buffer */
+	gtk_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(recv_box));
+	gtk_text_buffer_get_iter_at_offset(gtk_buffer, &iter, 0);
+
+	/* TODO: Get input via gui */
+	recv_mesg(buff, &type);
+	printf("%s\n", buff);
+	send_mesg("skippy\n");
+
+	recv_mesg(buff, &type);
+	printf("%s\n", buff);
+	send_mesg("22\n");
+
+	/* Display welcome message */
+	update_messages("Welcome to cmesg!\n");
 
 	gtk_widget_show(window);
 	gtk_main();
