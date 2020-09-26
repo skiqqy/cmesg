@@ -114,6 +114,18 @@ main(int argc, char *argv[])
 	char *hostname = "localhost";
 	char buff[256];
 	struct sockaddr_in address;
+	/* Map the widgets to thier ID's */
+	struct widge_mapping map[] = {
+		{.ID = "fixed", .widget = &fixed},
+		{.ID = "send", .widget = &send_btn},
+		{.ID = "recv", .widget = &recv_box},
+		{.ID = "text", .widget = &text},
+		{.ID = "name", .widget = &name},
+		{.ID = "voip_joined", .widget = &voip_joined},
+		{.ID = "user_online_label", .widget = &user_online_label},
+		{.ID = "jl_voip", .widget = &jl_voip},
+		{.ID = "user_online", .widget = &user_online},
+	};
 
 	gtk_init(&argc, &argv);
 	
@@ -149,15 +161,10 @@ main(int argc, char *argv[])
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	/* Map the GTK Widgets from the builder to thier Counterparts */
-	fixed = GTK_WIDGET(gtk_builder_get_object(builder, "fixed"));
-	send_btn = GTK_WIDGET(gtk_builder_get_object(builder, "send"));
-	recv_box = GTK_WIDGET(gtk_builder_get_object(builder, "recv"));
-	text = GTK_WIDGET(gtk_builder_get_object(builder, "text"));
-	name = GTK_WIDGET(gtk_builder_get_object(builder, "name"));
-	voip_joined = GTK_WIDGET(gtk_builder_get_object(builder, "voip_joined"));
-	user_online_label = GTK_WIDGET(gtk_builder_get_object(builder, "user_online_label"));
-	jl_voip = GTK_WIDGET(gtk_builder_get_object(builder, "jl_voip"));
-	user_online = GTK_WIDGET(gtk_builder_get_object(builder, "user_online"));
+	for (i = 0; i < sizeof(map)/sizeof(*map); i++) {
+		printf("%s\n", map[i].ID);
+		*(map[i].widget) = GTK_WIDGET(gtk_builder_get_object(builder, map[i].ID));
+	}
 
 	/* Map the buttons to thier handlers */
 	g_signal_connect(send_btn, "clicked", G_CALLBACK(on_send_clicked), NULL);
@@ -177,6 +184,8 @@ main(int argc, char *argv[])
 
 	/* Display welcome message */
 	update_messages("Welcome to cmesg!\n");
+
+	/* TODO: Fork recv thread */
 
 	gtk_widget_show(window);
 	gtk_main();

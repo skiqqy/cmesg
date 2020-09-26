@@ -18,6 +18,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct widge_mapping {
+	char *ID; // The ID
+	GtkWidget **widget; // The Widget
+};
+
 int sock; /* The socket FD */
 
 void send_mesg(char *mesg);
