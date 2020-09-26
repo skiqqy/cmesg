@@ -58,7 +58,12 @@ int
 recv_mesg(char *buff, int *type)
 {
 	/* TODO: Finish */
-	return read(sock, buff, 256); // Buffer cant be bigger than 256
+	int cnt = read(sock, buff, 256); // Buffer cant be bigger than 256
+	if (cnt < 0) {
+		return cnt;
+	}
+	buff[cnt] = 0; // Add a terminator
+	return cnt;
 }
 
 int
@@ -69,18 +74,18 @@ init_sock(int port, char *host, int *sock, struct sockaddr_in *address)
 	
 	/* First resolve the hostname */
 	if ((server = gethostbyname(host)) == NULL) {
-		printf("ERROR: Resolving hostname failed.\n");
+		perror("ERROR: Resolving hostname failed.\n");
 		return 0;
 	}
 
 	list = (struct in_addr **) server->h_addr_list;
 	if (!list[0]) {
-		printf("ERROR: Hostname list empty.\n");
+		perror("ERROR: Hostname list empty.\n");
 		return 0;
 	}
 
 	if ((*sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf("ERROR: Socket creation error.\n");
+		perror("ERROR: Socket creation error.\n");
 		return 0;
 	}
 
@@ -88,12 +93,12 @@ init_sock(int port, char *host, int *sock, struct sockaddr_in *address)
 	address->sin_port = htons(port);
 
 	if (inet_pton(AF_INET, inet_ntoa(*list[0]), &address->sin_addr) <= 0) {
-		printf("ERROR: Invalid address/Address not supported.\n");
+		perror("ERROR: Invalid address/Address not supported.\n");
 		return 0;
 	}
 
 	if (connect(*sock, (struct sockaddr *) address, sizeof(*address)) < 0) {
-		printf("ERROR: Connection Failed.\n");
+		perror("ERROR: Connection Failed.\n");
 		return 0;
 	}
 
@@ -101,7 +106,6 @@ init_sock(int port, char *host, int *sock, struct sockaddr_in *address)
 	return 1;
 }
 
-// Just test code to get used to gtk
 int
 main(int argc, char *argv[])
 {
@@ -142,7 +146,8 @@ main(int argc, char *argv[])
 
 	builder = gtk_builder_new_from_file("./assets/client.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "root"));
-	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	//g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(on_close), NULL);
 
 	/* Map the GTK Widgets from the builder to thier Counterparts */
 	fixed = GTK_WIDGET(gtk_builder_get_object(builder, "fixed"));
