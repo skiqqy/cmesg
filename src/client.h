@@ -11,10 +11,14 @@
 #include <string.h>
 #include <sys/socket.h> 
 #include <netinet/in.h> 
+#include <arpa/inet.h>
+#include <netdb.h>
 
 /* Standerd Libraries*/
 #include <stdlib.h>
 #include <stdio.h>
 
-void soc_read(char *buff);
+void send_mesg(char *mesg);
+int recv_mesg(char *buff, int *type);
 void on_send_clicked(GtkButton *b);
+int init_sock(int port, char *host, int *sock, struct sockaddr_in *address);

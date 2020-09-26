@@ -24,13 +24,78 @@ on_send_clicked(GtkButton *b)
 	gtk_entry_set_text(GTK_ENTRY(text), "");
 }
 
+/* Sends a message to the server
+ * 
+ * char *mesg: The message to send.
+ */
+void
+send_mesg(char *mesg)
+{
+	/* :TODO */
+}
+
+/* Stores the message from a server in buffer, and sets its type.
+ *
+ * char *buff: Stores the message into this buffer [out].
+ * int *type: Stores the message type [out].
+ */
+
+int
+recv_mesg(char *buff, int *type)
+{
+	/* :TODO */
+	return 0;
+}
+
+int
+init_sock(int port, char *host, int *sock, struct sockaddr_in *address)
+{
+	struct hostent *server;
+	struct in_addr **list;
+	
+	/* First resolve the hostname */
+	if ((server = gethostbyname(host)) == NULL) {
+		printf("ERROR: Resolving hostname failed.\n");
+		return 0;
+	}
+
+	list = (struct in_addr **) server->h_addr_list;
+	if (!list[0]) {
+		printf("ERROR: Hostname list empty.\n");
+		return 0;
+	}
+
+	if ((*sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		printf("ERROR: Socket creation error.\n");
+		return 0;
+	}
+
+	address->sin_family = AF_INET;
+	address->sin_port = htons(port);
+
+	if (inet_pton(AF_INET, inet_ntoa(*list[0]), &address->sin_addr) <= 0) {
+		printf("ERROR: Invalid address/Address not supported.\n");
+		return 0;
+	}
+
+	if (connect(*sock, (struct sockaddr *) address, sizeof(*address)) < 0) {
+		printf("ERROR: Connection Failed.\n");
+		return 0;
+	}
+
+	/* Success */
+	return 1;
+}
+
 // Just test code to get used to gtk
 int
 main(int argc, char *argv[])
 {
 	GtkWidget *window, *grid, *calculate;
-	int i, port;
-	char *hostname;
+	int i, port = 8199;
+	char *hostname = "localhost";
+	int sock;
+	struct sockaddr_in address;
 
 	gtk_init(&argc, &argv);
 	
@@ -55,6 +120,12 @@ main(int argc, char *argv[])
 				break;
 		}
 	}
+
+	if (!init_sock(port, hostname, &sock, &address)) {
+		exit(1);
+	}
+
+	/* Setup Sockets */
 
 	builder = gtk_builder_new_from_file("./assets/client.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "root"));
