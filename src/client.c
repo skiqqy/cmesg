@@ -94,7 +94,6 @@ main(int argc, char *argv[])
 	GtkWidget *window, *grid, *calculate;
 	int i, port = 8199;
 	char *hostname = "localhost";
-	int sock;
 	struct sockaddr_in address;
 
 	gtk_init(&argc, &argv);
@@ -121,11 +120,10 @@ main(int argc, char *argv[])
 		}
 	}
 
+	/* Setup Sockets */
 	if (!init_sock(port, hostname, &sock, &address)) {
 		exit(1);
 	}
-
-	/* Setup Sockets */
 
 	builder = gtk_builder_new_from_file("./assets/client.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "root"));

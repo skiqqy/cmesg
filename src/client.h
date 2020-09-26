@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int sock; /* The socket FD */
+
 void send_mesg(char *mesg);
 int recv_mesg(char *buff, int *type);
 void on_send_clicked(GtkButton *b);
