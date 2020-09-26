@@ -29,3 +29,4 @@ void send_mesg(char *mesg);
 int recv_mesg(char *buff, int *type);
 void on_send_clicked(GtkButton *b);
 int init_sock(int port, char *host, int *sock, struct sockaddr_in *address);
+void * recv_thread(void *data);

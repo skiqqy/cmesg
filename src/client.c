@@ -106,6 +106,21 @@ init_sock(int port, char *host, int *sock, struct sockaddr_in *address)
 	return 1;
 }
 
+void *
+recv_thread(void *data)
+{
+	char buff[512];
+	int type;
+
+	// Just display recieved messages.
+	while (1) {
+		recv_mesg(buff, &type);
+		update_messages(buff);
+	}
+
+	return 0;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -114,6 +129,7 @@ main(int argc, char *argv[])
 	char *hostname = "localhost";
 	char buff[256];
 	struct sockaddr_in address;
+	pthread_t worker_thread;
 	/* Map the widgets to thier ID's */
 	struct widge_mapping map[] = {
 		{.ID = "fixed", .widget = &fixed},
@@ -185,7 +201,8 @@ main(int argc, char *argv[])
 	/* Display welcome message */
 	update_messages("Welcome to cmesg!\n");
 
-	/* TODO: Fork recv thread */
+	/* Fork recv thread */
+	pthread_create(&worker_thread, NULL, recv_thread, NULL);
 
 	gtk_widget_show(window);
 	gtk_main();
