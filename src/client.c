@@ -146,8 +146,7 @@ main(int argc, char *argv[])
 
 	builder = gtk_builder_new_from_file("./assets/client.glade");
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "root"));
-	//g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(window, "destroy", G_CALLBACK(on_close), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	/* Map the GTK Widgets from the builder to thier Counterparts */
 	fixed = GTK_WIDGET(gtk_builder_get_object(builder, "fixed"));
